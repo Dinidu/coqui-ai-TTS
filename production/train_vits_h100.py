@@ -278,8 +278,32 @@ if USE_PRETRAINED and PRETRAINED_MODEL_PATH.exists():
 
 # Move model to GPU
 if device.type == "cuda":
-    model = model.cuda()
-    print(f"Model moved to GPU: {torch.cuda.get_device_name()}")
+    try:
+        # Clear any existing cache
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+        
+        # Try to move model to GPU
+        model = model.cuda()
+        print(f"Model moved to GPU: {torch.cuda.get_device_name()}")
+        
+    except RuntimeError as e:
+        if "CUDA" in str(e):
+            print("\n" + "=" * 80)
+            print("ERROR: CUDA device is busy or unavailable!")
+            print("=" * 80)
+            print("\nPossible solutions:")
+            print("1. Check for other processes using the GPU:")
+            print("   nvidia-smi")
+            print("\n2. Kill existing GPU processes:")
+            print("   python production/check_gpu.py --kill")
+            print("\n3. Reset the GPU (may require sudo):")
+            print("   sudo nvidia-smi --gpu-reset")
+            print("\n4. Restart the container/machine")
+            print("=" * 80)
+            raise
+        else:
+            raise
 
 # Print model size
 total_params = sum(p.numel() for p in model.parameters())
