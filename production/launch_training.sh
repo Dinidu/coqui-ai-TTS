@@ -80,12 +80,22 @@ else
     echo "Using system Python instead"
 fi
 
-# Ensure we're using the right Python
-PYTHON_CMD="python3"
+# Ensure we're using the right Python and pip
 if [ -f "${PROJECT_DIR}/venv_tts/bin/python3" ]; then
     PYTHON_CMD="${PROJECT_DIR}/venv_tts/bin/python3"
+    PIP_CMD="${PROJECT_DIR}/venv_tts/bin/pip"
     echo "Using Python from venv: ${PYTHON_CMD}"
+    echo "Using pip from venv: ${PIP_CMD}"
+else
+    PYTHON_CMD="python3"
+    PIP_CMD="pip"
+    echo "Warning: Using system Python and pip"
 fi
+
+# Verify virtual environment is working
+echo "Verifying virtual environment..."
+${PYTHON_CMD} -c "import sys; print(f'Python executable: {sys.executable}')"
+${PYTHON_CMD} -c "import sys; print(f'Python path: {sys.path[0]}')"
 
 # Install missing dependencies if needed
 echo "Checking and installing dependencies..."
@@ -93,19 +103,19 @@ echo "Checking and installing dependencies..."
 # Check for PyTorch
 ${PYTHON_CMD} -c "import torch" 2>/dev/null || {
     echo "Installing PyTorch with CUDA 11.8..."
-    pip install torch==2.1.2+cu118 torchaudio==2.1.2+cu118 --index-url https://download.pytorch.org/whl/cu118
+    ${PIP_CMD} install torch==2.1.2+cu118 torchaudio==2.1.2+cu118 --index-url https://download.pytorch.org/whl/cu118
 }
 
 # Check for tensorboard
-if ! command -v tensorboard &> /dev/null; then
+${PYTHON_CMD} -c "import tensorboard" 2>/dev/null || {
     echo "Installing tensorboard..."
-    pip install tensorboard>=2.14.0
-fi
+    ${PIP_CMD} install "tensorboard>=2.14.0"
+}
 
 # Check for trainer module
 ${PYTHON_CMD} -c "import trainer" 2>/dev/null || {
     echo "Installing coqui-tts-trainer..."
-    pip install "coqui-tts-trainer>=0.1.4,<0.2.0"
+    ${PIP_CMD} install "coqui-tts-trainer>=0.1.4,<0.2.0"
 }
 
 # Install all requirements to ensure compatibility (optional, comment out if slow)
