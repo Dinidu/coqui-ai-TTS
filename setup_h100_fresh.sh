@@ -62,46 +62,46 @@ pip install torch==2.1.2+cu118 torchaudio==2.1.2+cu118 --index-url https://downl
 # Install core dependencies first
 echo "8. Installing core dependencies..."
 pip install numpy==1.25.2
-pip install cython>=3.0.0
-pip install scipy>=1.11.2
+pip install "cython>=3.0.0"
+pip install "scipy>=1.11.2"
 
 # Install TTS dependencies
 echo "9. Installing TTS dependencies..."
 pip install \
-    tensorboard>=2.14.0 \
-    matplotlib>=3.7.0 \
-    tqdm>=4.64.1 \
-    librosa>=0.10.1 \
-    soundfile>=0.12.0 \
-    inflect>=5.6.0 \
-    anyascii>=0.3.0 \
-    pyyaml>=6.0 \
-    fsspec[http]>=2023.6.0 \
-    packaging>=23.1 \
-    pysbd>=0.3.4 \
-    num2words>=0.5.11 \
-    requests>=2.31.0 \
-    Pillow>=10.0.0 \
-    pandas>=1.5.0 \
-    scikit-learn>=1.3.0 \
-    psutil>=5.9.0
+    "tensorboard>=2.14.0" \
+    "matplotlib>=3.7.0" \
+    "tqdm>=4.64.1" \
+    "librosa>=0.10.1" \
+    "soundfile>=0.12.0" \
+    "inflect>=5.6.0" \
+    "anyascii>=0.3.0" \
+    "pyyaml>=6.0" \
+    "fsspec[http]>=2023.6.0" \
+    "packaging>=23.1" \
+    "pysbd>=0.3.4" \
+    "num2words>=0.5.11" \
+    "requests>=2.31.0" \
+    "Pillow>=10.0.0" \
+    "pandas>=1.5.0" \
+    "scikit-learn>=1.3.0" \
+    "psutil>=5.9.0"
 
 # Install Coqui TTS trainer and related packages
 echo "10. Installing Coqui TTS trainer..."
 pip install \
-    coqui-tts-trainer>=0.1.4,<0.2.0 \
-    trainer>=0.0.36 \
-    coqpit>=0.0.16 \
-    monotonic-alignment-search>=0.1.0
+    "coqui-tts-trainer>=0.1.4,<0.2.0" \
+    "trainer>=0.0.36" \
+    "coqpit>=0.0.16" \
+    "monotonic-alignment-search>=0.1.0"
 
 # Install text processing dependencies
 echo "11. Installing text processing dependencies..."
 pip install \
-    gruut[de,es,fr]>=2.4.0 \
-    spacy>=3,<3.8 \
-    einops>=0.6.0 \
-    transformers>=4.43.0,<=4.46.2 \
-    encodec>=0.1.1
+    "gruut[de,es,fr]>=2.4.0" \
+    "spacy>=3,<3.8" \
+    "einops>=0.6.0" \
+    "transformers>=4.43.0,<=4.46.2" \
+    "encodec>=0.1.1"
 
 # Download the pretrained model
 echo "12. Setting up pretrained model..."
