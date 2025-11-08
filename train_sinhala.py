@@ -130,9 +130,9 @@ def main():
     # Set device
     if args.use_cuda and hw_config["device"] == "cuda":
         device = torch.device("cuda")
-        # Enable GPU optimizations (using new PyTorch 2.9+ API)
-        torch.backends.cuda.matmul.fp32_precision = 'tf32'
-        torch.backends.cudnn.conv.fp32_precision = 'tf32'
+        # Enable GPU optimizations (using old API for PyTorch 2.0-2.4 compatibility)
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
         torch.backends.cudnn.benchmark = True
     else:
         device = torch.device("cpu")
