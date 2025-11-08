@@ -64,7 +64,7 @@ fi
 if [ ! -f "${DATASET_PATH}/metadata_train.csv" ] || [ ! -f "${DATASET_PATH}/metadata_val.csv" ]; then
     echo "ERROR: metadata_train.csv or metadata_val.csv not found"
     echo "Running dataset preparation..."
-    python "${SCRIPT_DIR}/prepare_dataset.py" \
+    python3 "${SCRIPT_DIR}/prepare_dataset.py" \
         "${DATASET_PATH}" \
         "${DATASET_PATH}_prepared" \
         --val-ratio 0.1
@@ -87,7 +87,7 @@ if ! command -v tensorboard &> /dev/null; then
 fi
 
 # Check for trainer module
-python -c "import trainer" 2>/dev/null || {
+python3 -c "import trainer" 2>/dev/null || {
     echo "Installing coqui-tts-trainer..."
     pip install "coqui-tts-trainer>=0.1.4,<0.2.0"
 }
@@ -100,7 +100,7 @@ python -c "import trainer" 2>/dev/null || {
 
 # Check Python and PyTorch installation
 echo "Checking environment..."
-python -c "
+python3 -c "
 import torch
 print(f'PyTorch version: {torch.__version__}')
 print(f'CUDA available: {torch.cuda.is_available()}')
@@ -153,7 +153,7 @@ if [ $NUM_GPUS -gt 1 ]; then
 else
     echo "Starting single-GPU training..."
     
-    python "${SCRIPT_DIR}/train_vits_h100.py" \
+    python3 "${SCRIPT_DIR}/train_vits_h100.py" \
         2>&1 | tee -a "$LOG_FILE"
 fi
 
