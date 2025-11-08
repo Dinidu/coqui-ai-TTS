@@ -34,9 +34,9 @@ DATASETS_DIR = BASE_DIR / "datasets" / "sinhala-production"  # Your production d
 OUTPUT_DIR = BASE_DIR / "output" / "production" / f"vits_sinhala_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
 # Pretrained model paths (optional - for fine-tuning)
-USE_PRETRAINED = True  # Set to False to train from scratch
 PRETRAINED_MODEL_PATH = MODELS_DIR / "model_file.pth"
 PRETRAINED_CONFIG_PATH = MODELS_DIR / "config.json"
+USE_PRETRAINED = PRETRAINED_MODEL_PATH.exists()  # Auto-detect if pretrained model exists
 
 # Check GPU availability
 if not torch.cuda.is_available():
