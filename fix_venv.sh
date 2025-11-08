@@ -54,7 +54,14 @@ pip install \
     "coqui-tts-trainer>=0.1.4,<0.2.0" \
     "trainer>=0.0.36" \
     "coqpit>=0.0.16" \
-    "monotonic-alignment-search>=0.1.0"
+    "monotonic-alignment-search>=0.1.0" \
+    "pyyaml>=6.0" \
+    "inflect>=5.6.0" \
+    "tqdm>=4.64.1" \
+    "anyascii>=0.3.0" \
+    "packaging>=23.1" \
+    "pysbd>=0.3.4" \
+    "fsspec[http]>=2023.6.0"
 
 # Test installation
 echo ""
