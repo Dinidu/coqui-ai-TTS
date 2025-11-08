@@ -103,24 +103,31 @@ pip install \
     "transformers>=4.43.0,<=4.46.2" \
     "encodec>=0.1.1"
 
-# Download the pretrained model
-echo "12. Setting up pretrained model..."
-mkdir -p models/pretrained
-cd models/pretrained
-
-if [ ! -f "model_file.pth" ]; then
-    echo "Downloading pretrained model from HuggingFace..."
-    wget https://huggingface.co/tharindumihi/tts-si-female-vits-v2/resolve/main/model_file.pth
+# Check for dataset (assuming it's already available)
+echo "12. Checking dataset..."
+if [ -d "datasets/sinhala-production" ] && [ -f "datasets/sinhala-production/metadata_train.csv" ]; then
+    echo "✓ Dataset found at datasets/sinhala-production/"
+else
+    echo "⚠ Dataset not found at datasets/sinhala-production/"
+    echo "  Please ensure dataset is prepared with:"
+    echo "  - datasets/sinhala-production/wavs/ (audio files)"
+    echo "  - datasets/sinhala-production/metadata_train.csv"
+    echo "  - datasets/sinhala-production/metadata_val.csv"
 fi
 
-if [ ! -f "config.json" ]; then
-    wget https://huggingface.co/tharindumihi/tts-si-female-vits-v2/resolve/main/config.json
+# Check for pretrained model (assuming it's already available)
+echo "13. Checking pretrained model..."
+if [ -d "models/pretrained" ] && [ -f "models/pretrained/model_file.pth" ]; then
+    echo "✓ Pretrained model found at models/pretrained/"
+else
+    echo "⚠ Pretrained model not found at models/pretrained/"
+    echo "  Please ensure model files are at:"
+    echo "  - models/pretrained/model_file.pth"
+    echo "  - models/pretrained/config.json"
 fi
-
-cd ../..
 
 # Verify CUDA installation
-echo "13. Verifying CUDA setup..."
+echo "14. Verifying CUDA setup..."
 python -c "
 import torch
 print(f'PyTorch version: {torch.__version__}')
