@@ -161,11 +161,7 @@ config = VitsConfig(
     
     # Checkpointing and logging
     print_step=25,
-    log_step=50,
     print_eval=True,
-    save_step=1000,  # Save checkpoint every 1000 steps
-    save_n_checkpoints=5,  # Keep last 5 checkpoints
-    save_best_after=10000,  # Start saving best model after 10k steps
     
     # Mixed precision training for H100
     mixed_precision=True,  # Enable AMP for faster training
@@ -174,9 +170,8 @@ config = VitsConfig(
     output_path=str(OUTPUT_DIR),
     datasets=[dataset_config],
     
-    # CUDNN optimizations
+    # CUDNN optimizations (moved to trainer config)
     cudnn_enable=True,
-    cudnn_deterministic=False,
     cudnn_benchmark=True,  # Let CUDNN find best algorithms
     
     # Evaluation settings
