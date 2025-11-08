@@ -2,7 +2,11 @@ import importlib.metadata
 
 from TTS.utils.generic_utils import is_pytorch_at_least_2_4
 
-__version__ = importlib.metadata.version("coqui-tts")
+try:
+    __version__ = importlib.metadata.version("coqui-tts")
+except importlib.metadata.PackageNotFoundError:
+    # Development mode - package not installed
+    __version__ = "0.0.0-dev"
 
 
 if is_pytorch_at_least_2_4():
