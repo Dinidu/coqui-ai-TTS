@@ -1,0 +1,43 @@
+# Minimal requirements for Sinhala TTS training
+# These are the essential packages needed
+
+# Core dependencies
+numpy==1.25.2
+cython>=3.0.0
+scipy>=1.11.2
+
+# Audio processing
+librosa>=0.10.1
+soundfile>=0.12.0
+
+# Text processing (essential)
+inflect>=5.6.0
+anyascii>=0.3.0
+pyyaml>=6.0
+pysbd>=0.3.4
+num2words>=0.5.11
+unidecode>=1.3.0
+
+# Training infrastructure
+tensorboard>=2.14.0
+matplotlib>=3.7.0
+tqdm>=4.64.1
+packaging>=23.1
+
+# Coqui TTS specific
+coqui-tts-trainer>=0.1.4,<0.2.0
+trainer>=0.0.36
+coqpit>=0.0.16
+monotonic-alignment-search>=0.1.0
+
+# Utilities
+fsspec[http]>=2023.6.0
+requests>=2.31.0
+Pillow>=10.0.0
+psutil>=5.9.0
+pandas>=1.5.0
+scikit-learn>=1.3.0
+
+# Optional but useful
+einops>=0.6.0
+# Skip gruut, spacy, transformers for now as they're not needed for basic VITS training
