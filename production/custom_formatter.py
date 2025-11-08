@@ -6,7 +6,8 @@ def sinhala_formatter(root_path, meta_file, **kwargs):
     Formatter for Sinhala dataset with format:
     audio_filename|sinhala_text|romanized_text
     
-    Uses the romanized text (3rd column) for training
+    Uses the native Sinhala text (2nd column) for training
+    to match pretrained model's character set
     """
     txt_file = os.path.join(root_path, meta_file)
     items = []
@@ -24,12 +25,12 @@ def sinhala_formatter(root_path, meta_file, **kwargs):
                 continue
             
             # Column 0: audio filename (without extension)
-            # Column 1: Sinhala text
+            # Column 1: Sinhala text (native script)
             # Column 2: Romanized text
             wav_file = os.path.join(root_path, "wavs", cols[0] + ".wav")
             
-            # Use romanized text (column 2) for training
-            text = cols[2].strip()
+            # Use native Sinhala text (column 1) for training
+            text = cols[1].strip()
             
             if os.path.exists(wav_file):
                 items.append({

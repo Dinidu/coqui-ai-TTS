@@ -1,0 +1,10 @@
+{
+  "total_samples": 3300,
+  "train_samples": 2970,
+  "val_samples": 330,
+  "sinhala_chars": 84,
+  "romanized_chars": 53,
+  "sinhala_charset": " !'(),-.:;?ංඃඅආඇඈඉඊඋඌඍඑඒඓඔඕඖකඛගඝඞඟචඡජඣඤඥටඨඩඪණඬතථදධනඳපඵබභමඹයරලවශෂසහළෆ්ාැෑිීුූෘෙේෛොෝෞෲ",
+  "avg_sinhala_length": 88.81575757575757,
+  "avg_romanized_length": 103.02757575757576
+}

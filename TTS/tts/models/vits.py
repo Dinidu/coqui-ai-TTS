@@ -73,7 +73,15 @@ def load_audio(file_path):
     Return Shapes:
         - x: :math:`[1, T]`
     """
-    x, sr = torchaudio.load(file_path)
+    # Use soundfile for compatibility with newer torchaudio versions
+    import soundfile as sf
+    import torch
+    data, sr = sf.read(file_path, dtype='float32')
+    # Convert to torch tensor and add batch dimension if needed
+    if len(data.shape) == 1:
+        x = torch.FloatTensor(data).unsqueeze(0)
+    else:
+        x = torch.FloatTensor(data).T  # Transpose to match torchaudio format
     assert (x > 1).sum() + (x < -1).sum() == 0
     return x, sr
 

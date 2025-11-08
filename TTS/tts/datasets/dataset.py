@@ -57,8 +57,14 @@ def get_audio_size(audiopath: Union[str, os.PathLike[Any]]) -> int:
         raise RuntimeError(msg)
 
     try:
-        return torchaudio.info(audiopath).num_frames
-    except RuntimeError as e:
+        # Use soundfile which is more reliable
+        import soundfile as sf
+        data, samplerate = sf.read(audiopath)
+        if len(data.shape) == 1:
+            return len(data)
+        else:
+            return data.shape[0]
+    except (RuntimeError, AttributeError, ImportError) as e:
         msg = f"Failed to decode {audiopath}"
         raise RuntimeError(msg) from e
 
