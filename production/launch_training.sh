@@ -64,7 +64,7 @@ fi
 if [ ! -f "${DATASET_PATH}/metadata_train.csv" ] || [ ! -f "${DATASET_PATH}/metadata_val.csv" ]; then
     echo "ERROR: metadata_train.csv or metadata_val.csv not found"
     echo "Running dataset preparation..."
-    python3 "${SCRIPT_DIR}/prepare_dataset.py" \
+    ${PYTHON_CMD} "${SCRIPT_DIR}/prepare_dataset.py" \
         "${DATASET_PATH}" \
         "${DATASET_PATH}_prepared" \
         --val-ratio 0.1
@@ -75,10 +75,26 @@ fi
 if [ -f "${PROJECT_DIR}/venv_tts/bin/activate" ]; then
     echo "Activating virtual environment..."
     source "${PROJECT_DIR}/venv_tts/bin/activate"
+else
+    echo "Warning: Virtual environment not found at ${PROJECT_DIR}/venv_tts"
+    echo "Using system Python instead"
+fi
+
+# Ensure we're using the right Python
+PYTHON_CMD="python3"
+if [ -f "${PROJECT_DIR}/venv_tts/bin/python3" ]; then
+    PYTHON_CMD="${PROJECT_DIR}/venv_tts/bin/python3"
+    echo "Using Python from venv: ${PYTHON_CMD}"
 fi
 
 # Install missing dependencies if needed
 echo "Checking and installing dependencies..."
+
+# Check for PyTorch
+${PYTHON_CMD} -c "import torch" 2>/dev/null || {
+    echo "Installing PyTorch with CUDA 11.8..."
+    pip install torch==2.1.2+cu118 torchaudio==2.1.2+cu118 --index-url https://download.pytorch.org/whl/cu118
+}
 
 # Check for tensorboard
 if ! command -v tensorboard &> /dev/null; then
@@ -87,7 +103,7 @@ if ! command -v tensorboard &> /dev/null; then
 fi
 
 # Check for trainer module
-python3 -c "import trainer" 2>/dev/null || {
+${PYTHON_CMD} -c "import trainer" 2>/dev/null || {
     echo "Installing coqui-tts-trainer..."
     pip install "coqui-tts-trainer>=0.1.4,<0.2.0"
 }
@@ -100,7 +116,7 @@ python3 -c "import trainer" 2>/dev/null || {
 
 # Check Python and PyTorch installation
 echo "Checking environment..."
-python3 -c "
+${PYTHON_CMD} -c "
 import torch
 print(f'PyTorch version: {torch.__version__}')
 print(f'CUDA available: {torch.cuda.is_available()}')
@@ -153,7 +169,7 @@ if [ $NUM_GPUS -gt 1 ]; then
 else
     echo "Starting single-GPU training..."
     
-    python3 "${SCRIPT_DIR}/train_vits_h100.py" \
+    ${PYTHON_CMD} "${SCRIPT_DIR}/train_vits_h100.py" \
         2>&1 | tee -a "$LOG_FILE"
 fi
 
