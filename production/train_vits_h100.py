@@ -96,7 +96,6 @@ config = VitsConfig(
     batch_group_size=5,
     num_loader_workers=8,  # Multi-threaded data loading
     num_eval_loader_workers=4,
-    pin_memory=True,  # Pin memory for faster GPU transfer
     
     # Training configuration
     run_eval=True,

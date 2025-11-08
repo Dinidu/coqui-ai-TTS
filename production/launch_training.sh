@@ -74,6 +74,27 @@ if [ -f "${PROJECT_DIR}/venv_tts/bin/activate" ]; then
     source "${PROJECT_DIR}/venv_tts/bin/activate"
 fi
 
+# Install missing dependencies if needed
+echo "Checking and installing dependencies..."
+
+# Check for tensorboard
+if ! command -v tensorboard &> /dev/null; then
+    echo "Installing tensorboard..."
+    pip install tensorboard>=2.14.0
+fi
+
+# Check for trainer module
+python -c "import trainer" 2>/dev/null || {
+    echo "Installing coqui-tts-trainer..."
+    pip install coqui-tts-trainer>=0.1.4,<0.2.0
+}
+
+# Install all requirements to ensure compatibility (optional, comment out if slow)
+# if [ -f "${SCRIPT_DIR}/requirements_h100.txt" ]; then
+#     echo "Installing H100 requirements..."
+#     pip install -q -r "${SCRIPT_DIR}/requirements_h100.txt"
+# fi
+
 # Check Python and PyTorch installation
 echo "Checking environment..."
 python -c "
