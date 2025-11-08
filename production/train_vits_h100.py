@@ -18,7 +18,7 @@ from trainer import Trainer, TrainerArgs
 from TTS.tts.configs.shared_configs import BaseDatasetConfig, CharactersConfig
 from TTS.tts.configs.vits_config import VitsConfig
 from TTS.tts.datasets import load_tts_samples
-from TTS.tts.models.vits import Vits, VitsAudioConfig
+from TTS.tts.models.vits import Vits, VitsAudioConfig, VitsArgs
 from TTS.tts.utils.text.tokenizer import TTSTokenizer
 from TTS.utils.audio import AudioProcessor
 
@@ -183,20 +183,31 @@ config = VitsConfig(
     use_d_vector_file=False,
     d_vector_dim=0,
     
-    # Model architecture parameters (can be tuned)
-    hidden_channels=192,
-    filter_channels=768,
-    n_heads=2,
-    n_layers=6,
-    kernel_size=3,
-    p_dropout=0.1,
-    resblock="1",
-    resblock_kernel_sizes=[3, 7, 11],
-    resblock_dilation_sizes=[[1, 3, 5], [1, 3, 5], [1, 3, 5]],
-    upsample_rates=[8, 8, 2, 2],
-    upsample_initial_channel=512,
-    upsample_kernel_sizes=[16, 16, 4, 4],
-    use_spectral_norm=False,
+    # Model architecture parameters wrapped in VitsArgs
+    model_args=VitsArgs(
+        hidden_channels=192,
+        hidden_channels_ffn_text_encoder=768,
+        num_heads_text_encoder=2,
+        num_layers_text_encoder=6,
+        kernel_size_text_encoder=3,
+        dropout_p_text_encoder=0.1,
+        dropout_p_duration_predictor=0.5,
+        kernel_size_posterior_encoder=5,
+        dilation_rate_posterior_encoder=1,
+        num_layers_posterior_encoder=16,
+        kernel_size_flow=5,
+        dilation_rate_flow=1,
+        num_layers_flow=4,
+        resblock_type_decoder="1",
+        resblock_kernel_sizes_decoder=[3, 7, 11],
+        resblock_dilation_sizes_decoder=[[1, 3, 5], [1, 3, 5], [1, 3, 5]],
+        upsample_rates_decoder=[8, 8, 2, 2],
+        upsample_initial_channel_decoder=512,
+        upsample_kernel_sizes_decoder=[16, 16, 4, 4],
+        use_spectral_norm_disriminator=False,
+        spec_segment_size=32,
+        use_sdp=True,
+    ),
     
     # Loss weights
     kl_loss_alpha=1.0,
