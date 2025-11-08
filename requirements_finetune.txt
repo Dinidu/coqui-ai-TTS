@@ -1,0 +1,45 @@
+# Core dependencies for TTS fine-tuning
+# Python 3.10.13 compatible versions
+
+# Core packages
+numpy>=1.25.2,<2.0
+cython>=3.0.0
+scipy>=1.11.2
+torch>=2.1,<2.2
+torchaudio>=2.1.0
+soundfile>=0.12.0
+librosa>=0.10.1
+inflect>=5.6.0
+tqdm>=4.64.1
+anyascii>=0.3.0
+pyyaml>=6.0
+fsspec[http]>=2023.6.0
+packaging>=23.1
+
+# Inference
+pysbd>=0.3.4
+
+# Training
+matplotlib>=3.7.0
+tensorboard>=2.14.0
+
+# Coqui stack
+coqui-tts-trainer>=0.1.4,<0.2.0
+coqpit>=0.0.16
+monotonic-alignment-search>=0.1.0
+
+# Text processing
+gruut[de,es,fr]>=2.4.0
+num2words>=0.5.11
+
+# Neural network components
+einops>=0.6.0
+transformers>=4.43.0,<=4.46.2
+encodec>=0.1.1
+
+# Additional utilities
+requests>=2.31.0
+Pillow>=10.0.0
+
+# Spacy for text processing (without GPU)
+spacy>=3,<3.8

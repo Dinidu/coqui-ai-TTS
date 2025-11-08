@@ -124,19 +124,17 @@ def wav_to_spec(y, n_fft, hop_length, win_length, center=False):
     )
     y = y.squeeze(1)
 
-    spec = torch.view_as_real(
-        torch.stft(
-            y,
-            n_fft,
-            hop_length=hop_length,
-            win_length=win_length,
-            window=hann_window[wnsize_dtype_device],
-            center=center,
-            pad_mode="reflect",
-            normalized=False,
-            onesided=True,
-            return_complex=True,
-        )
+    spec = torch.stft(
+        y,
+        n_fft,
+        hop_length=hop_length,
+        win_length=win_length,
+        window=hann_window[wnsize_dtype_device],
+        center=center,
+        pad_mode="reflect",
+        normalized=False,
+        onesided=True,
+        return_complex=True,
     )
     spec = torch.view_as_real(spec)
 
@@ -195,19 +193,17 @@ def wav_to_mel(y, n_fft, num_mels, sample_rate, hop_length, win_length, fmin, fm
     )
     y = y.squeeze(1)
 
-    spec = torch.view_as_real(
-        torch.stft(
-            y,
-            n_fft,
-            hop_length=hop_length,
-            win_length=win_length,
-            window=hann_window[wnsize_dtype_device],
-            center=center,
-            pad_mode="reflect",
-            normalized=False,
-            onesided=True,
-            return_complex=True,
-        )
+    spec = torch.stft(
+        y,
+        n_fft,
+        hop_length=hop_length,
+        win_length=win_length,
+        window=hann_window[wnsize_dtype_device],
+        center=center,
+        pad_mode="reflect",
+        normalized=False,
+        onesided=True,
+        return_complex=True,
     )
     spec = torch.view_as_real(spec)
 
