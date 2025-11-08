@@ -89,7 +89,7 @@ fi
 # Check for trainer module
 python -c "import trainer" 2>/dev/null || {
     echo "Installing coqui-tts-trainer..."
-    pip install coqui-tts-trainer>=0.1.4,<0.2.0
+    pip install "coqui-tts-trainer>=0.1.4,<0.2.0"
 }
 
 # Install all requirements to ensure compatibility (optional, comment out if slow)
