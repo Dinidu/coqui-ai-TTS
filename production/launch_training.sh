@@ -22,10 +22,13 @@ export CUDA_VISIBLE_DEVICES="0"  # Set to "0,1,2,3" for multi-GPU
 NUM_GPUS=$(echo $CUDA_VISIBLE_DEVICES | tr ',' '\n' | wc -l)
 
 # H100 Optimizations
-export CUDA_LAUNCH_BLOCKING=0
+export CUDA_LAUNCH_BLOCKING=1  # Set to 1 for debugging CUDA errors
 export CUDNN_BENCHMARK=1
 export TORCH_CUDA_ARCH_LIST="9.0"  # H100 architecture
 export PYTORCH_CUDA_ALLOC_CONF="max_split_size_mb:512"
+
+# Additional debugging for CUDA errors
+export TORCH_USE_CUDA_DSA=1  # Enable device-side assertions
 
 # Mixed Precision Settings
 export TORCH_ALLOW_TF32=1

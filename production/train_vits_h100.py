@@ -43,13 +43,29 @@ if not torch.cuda.is_available():
     print("WARNING: CUDA not available. This script is optimized for GPU training!")
     device = torch.device("cpu")
 else:
-    # Use H100 optimizations
-    device = torch.device("cuda")
-    torch.backends.cuda.matmul.allow_tf32 = True  # Enable TF32 for H100
-    torch.backends.cudnn.allow_tf32 = True
-    torch.backends.cudnn.benchmark = True  # Enable cudnn autotuner
-    print(f"Using GPU: {torch.cuda.get_device_name()}")
-    print(f"GPU Count: {torch.cuda.device_count()}")
+    # Initialize CUDA carefully
+    try:
+        # Set device explicitly
+        torch.cuda.set_device(0)
+        
+        # Test CUDA access
+        test = torch.zeros(1, device='cuda:0')
+        del test
+        
+        device = torch.device("cuda:0")
+        
+        # Use H100 optimizations
+        torch.backends.cuda.matmul.allow_tf32 = True  # Enable TF32 for H100
+        torch.backends.cudnn.allow_tf32 = True
+        torch.backends.cudnn.benchmark = True  # Enable cudnn autotuner
+        
+        print(f"Using GPU: {torch.cuda.get_device_name(0)}")
+        print(f"GPU Count: {torch.cuda.device_count()}")
+        
+    except Exception as e:
+        print(f"WARNING: CUDA initialization failed: {e}")
+        print("Falling back to CPU...")
+        device = torch.device("cpu")
 
 # Create output directory
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -279,31 +295,30 @@ if USE_PRETRAINED and PRETRAINED_MODEL_PATH.exists():
 # Move model to GPU
 if device.type == "cuda":
     try:
-        # Clear any existing cache
-        torch.cuda.empty_cache()
-        torch.cuda.synchronize()
+        # First test if CUDA is really working
+        print("Testing CUDA availability...")
+        test_tensor = torch.zeros(1).cuda()
+        del test_tensor
+        print("✓ CUDA test successful")
+        
+        # Clear cache without synchronize
+        if hasattr(torch.cuda, 'empty_cache'):
+            torch.cuda.empty_cache()
         
         # Try to move model to GPU
-        model = model.cuda()
-        print(f"Model moved to GPU: {torch.cuda.get_device_name()}")
+        print("Moving model to GPU...")
+        model = model.to(device)  # Use .to() instead of .cuda()
+        print(f"✓ Model moved to GPU: {torch.cuda.get_device_name()}")
         
-    except RuntimeError as e:
-        if "CUDA" in str(e):
-            print("\n" + "=" * 80)
-            print("ERROR: CUDA device is busy or unavailable!")
-            print("=" * 80)
-            print("\nPossible solutions:")
-            print("1. Check for other processes using the GPU:")
-            print("   nvidia-smi")
-            print("\n2. Kill existing GPU processes:")
-            print("   python production/check_gpu.py --kill")
-            print("\n3. Reset the GPU (may require sudo):")
-            print("   sudo nvidia-smi --gpu-reset")
-            print("\n4. Restart the container/machine")
-            print("=" * 80)
-            raise
-        else:
-            raise
+    except (RuntimeError, torch.cuda.CudaError) as e:
+        print("\n" + "=" * 80)
+        print(f"ERROR: CUDA initialization failed: {e}")
+        print("=" * 80)
+        print("\nTrying CPU fallback...")
+        device = torch.device("cpu")
+        model = model.to(device)
+        print("⚠ WARNING: Running on CPU - will be very slow!")
+        print("=" * 80)
 
 # Print model size
 total_params = sum(p.numel() for p in model.parameters())
