@@ -142,6 +142,23 @@ def main():
     batch_size = args.batch_size if args.batch_size else hw_config["batch_size"]
     mixed_precision = args.mixed_precision or hw_config["mixed_precision"]
     
+    # Safety checks for fine-tuning mode
+    if args.mode == 'finetune':
+        if batch_size < 8:
+            print(f"⚠️  Warning: Batch size {batch_size} is too small for stable fine-tuning!")
+            print("   Recommended minimum: 16")
+            print("   Risk: Gradient explosion and model corruption")
+            if batch_size < 4:
+                print("❌ ERROR: Batch size < 4 is dangerous. Setting to minimum of 8.")
+                batch_size = 8
+        
+        if args.lr and args.lr > 0.0001:
+            print(f"⚠️  Warning: Learning rate {args.lr} is too high for fine-tuning!")
+            print("   Recommended: 1e-5 (0.00001)")
+            print("   Risk: Destroying pretrained weights")
+            print("   Overriding to safe value: 1e-5")
+            args.lr = 1e-5
+    
     # Set output directory
     if args.output_path:
         output_dir = Path(args.output_path)
@@ -237,6 +254,15 @@ def main():
         
         # Clean up temp file
         os.unlink(temp_config_path)
+        
+        # Final safety validation for fine-tuning
+        if config.lr > 0.0001 or config.lr_gen > 0.0001 or config.lr_disc > 0.0001:
+            print("❌ CRITICAL: Config merger failed to set safe learning rates!")
+            print(f"   lr={config.lr}, lr_gen={config.lr_gen}, lr_disc={config.lr_disc}")
+            print("   Forcing safe values...")
+            config.lr = 1e-5
+            config.lr_gen = 1e-5
+            config.lr_disc = 1e-5
         
         # Dataset config is already in the merged config
         dataset_config = None  # Will use config.datasets directly

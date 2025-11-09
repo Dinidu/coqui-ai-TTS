@@ -138,23 +138,7 @@ class ConfigMerger:
         if output_path:
             config['output_path'] = output_path
         
-        # Apply fine-tuning adjustments
-        for key, value in self.FINETUNE_ADJUSTMENTS.items():
-            if key in config:
-                # For learning rates, use minimum of current and suggested
-                if 'lr' in key:
-                    config[key] = min(config.get(key, value), value)
-                else:
-                    config[key] = value
-        
-        # Ensure gradient clipping is a list for dual optimizers
-        if 'grad_clip' in config:
-            if not isinstance(config['grad_clip'], list):
-                config['grad_clip'] = [config['grad_clip'], config['grad_clip']]
-        else:
-            config['grad_clip'] = [1000.0, 1000.0]
-        
-        # Apply custom parameters if provided
+        # Apply custom parameters first (if provided)
         if custom_params:
             for key, value in custom_params.items():
                 # Check if this is a preserved key
@@ -163,6 +147,26 @@ class ConfigMerger:
                     self.set_nested_value(config, key, value)
                 else:
                     print(f"Warning: Skipping preserved parameter: {key}")
+        
+        # Apply fine-tuning adjustments (these override custom params for safety)
+        for key, value in self.FINETUNE_ADJUSTMENTS.items():
+            if key in config:
+                # For learning rates in fine-tuning mode, always use the safe value
+                if 'lr' in key:
+                    # Force safe learning rate for fine-tuning
+                    config[key] = value
+                    print(f"Setting {key} to {value} for safe fine-tuning")
+                else:
+                    config[key] = value
+        
+        # Ensure gradient clipping is reasonable for fine-tuning
+        if 'grad_clip' in config:
+            if not isinstance(config['grad_clip'], list):
+                config['grad_clip'] = [config['grad_clip'], config['grad_clip']]
+            # Force reasonable gradient clipping for fine-tuning
+            config['grad_clip'] = [1.0, 1.0]
+        else:
+            config['grad_clip'] = [1.0, 1.0]
         
         # Update run name
         config['run_name'] = 'vits_sinhala_finetune'
