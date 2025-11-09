@@ -4,6 +4,34 @@ echo "========================================"
 echo "TTS Fine-tuning Setup"
 echo "========================================"
 
+# Function to download file from Google Drive
+download_from_gdrive() {
+    local FILE_ID=$1
+    local DEST_PATH=$2
+    
+    echo "Downloading from Google Drive..."
+    
+    # Method 1: Try using gdown if available
+    if command -v gdown &> /dev/null; then
+        gdown "https://drive.google.com/uc?id=${FILE_ID}" -O "$DEST_PATH"
+        return $?
+    fi
+    
+    # Method 2: Use curl with cookie handling
+    echo "Using curl to download..."
+    local CONFIRM=$(curl -sc /tmp/gcookie "https://drive.google.com/uc?export=download&id=${FILE_ID}" | \
+                    grep -o 'confirm=[^&]*' | sed 's/confirm=//')
+    
+    if [ ! -z "$CONFIRM" ]; then
+        curl -Lb /tmp/gcookie "https://drive.google.com/uc?export=download&confirm=${CONFIRM}&id=${FILE_ID}" -o "$DEST_PATH"
+    else
+        curl -Lb /tmp/gcookie "https://drive.google.com/uc?export=download&id=${FILE_ID}" -o "$DEST_PATH"
+    fi
+    
+    rm -f /tmp/gcookie
+    return $?
+}
+
 # Detect CUDA version
 detect_cuda_version() {
     if command -v nvidia-smi &> /dev/null; then
@@ -82,6 +110,58 @@ pip install -r requirements.txt
 
 # Download spacy model (optional)
 python -m spacy download en_core_web_sm 2>/dev/null || echo "Spacy model download skipped"
+
+# Download pretrained model if not exists
+echo ""
+echo "Checking pretrained model..."
+PRETRAINED_DIR="models/pretrained"
+MODEL_FILE="$PRETRAINED_DIR/model_file.pth"
+CONFIG_FILE="$PRETRAINED_DIR/config.json"
+
+# Create directory if it doesn't exist
+mkdir -p "$PRETRAINED_DIR"
+
+# Download model file if not exists
+if [ ! -f "$MODEL_FILE" ]; then
+    echo "Pretrained model not found. Downloading (~950MB)..."
+    echo "This may take a few minutes depending on your internet speed..."
+    
+    # Install gdown if not available (faster than curl for Google Drive)
+    if ! command -v gdown &> /dev/null; then
+        echo "Installing gdown for faster Google Drive downloads..."
+        pip install gdown -q
+    fi
+    
+    # Extract file ID from the Google Drive URL
+    # URL: https://drive.google.com/file/d/13CA3ZgqBxyKaayLURkQzqp8W5vOzq0rS/view?usp=sharing
+    FILE_ID="13CA3ZgqBxyKaayLURkQzqp8W5vOzq0rS"
+    
+    if download_from_gdrive "$FILE_ID" "$MODEL_FILE"; then
+        echo "✓ Pretrained model downloaded successfully!"
+        
+        # Verify file size
+        if [ -f "$MODEL_FILE" ]; then
+            SIZE=$(ls -lh "$MODEL_FILE" | awk '{print $5}')
+            echo "  Model size: $SIZE"
+        fi
+    else
+        echo "⚠️  Warning: Failed to download pretrained model"
+        echo "  You can manually download from:"
+        echo "  https://drive.google.com/file/d/13CA3ZgqBxyKaayLURkQzqp8W5vOzq0rS/view"
+        echo "  And place it at: $MODEL_FILE"
+    fi
+else
+    SIZE=$(ls -lh "$MODEL_FILE" | awk '{print $5}')
+    echo "✓ Pretrained model already exists (size: $SIZE)"
+fi
+
+# Check for config file
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "⚠️  Warning: config.json not found at $CONFIG_FILE"
+    echo "  Make sure to have the pretrained config file for fine-tuning"
+else
+    echo "✓ Pretrained config found"
+fi
 
 # Verify installation
 echo ""
