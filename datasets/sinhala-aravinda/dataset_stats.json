@@ -1,0 +1,8 @@
+{
+  "total_samples": 1165,
+  "train_samples": 1050,
+  "val_samples": 115,
+  "unique_characters": 79,
+  "speaker": "aravinda",
+  "audio_format": "mono"
+}

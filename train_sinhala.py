@@ -6,6 +6,7 @@ Works on any GPU (H100, A100, V100, RTX, etc.) or CPU
 
 import os
 import sys
+import re
 import torch
 import argparse
 import warnings
@@ -19,6 +20,85 @@ warnings.filterwarnings("ignore", message=".*allow_tf32.*deprecated.*")
 
 # Global trainer reference for signal handling
 _trainer = None
+
+# Number of best models to keep
+KEEP_N_BEST_MODELS = 3
+
+
+def keep_n_best_models(output_dir: Path, n: int = 3):
+    """
+    Keep only the N best models in the output directory.
+    Ranks models by their loss value (lower is better).
+    Maintains: best_model.pth (best), second_best_model.pth, third_best_model.pth
+    """
+    import glob
+
+    # Find all best_model_*.pth files (but not best_model.pth itself or ranked ones)
+    pattern = str(output_dir / "best_model_*.pth")
+    best_models = glob.glob(pattern)
+
+    if len(best_models) <= n:
+        return  # Nothing to cleanup
+
+    # Load each model and extract loss
+    model_losses = []
+    for model_path in best_models:
+        try:
+            checkpoint = torch.load(model_path, map_location='cpu', weights_only=False)
+            loss_info = checkpoint.get('model_loss', {})
+
+            # Extract the relevant loss value
+            if isinstance(loss_info, dict):
+                # Prefer eval_loss if available, otherwise train_loss
+                loss = loss_info.get('eval_loss') or loss_info.get('train_loss') or float('inf')
+            else:
+                loss = loss_info if loss_info is not None else float('inf')
+
+            step = checkpoint.get('step', 0)
+            model_losses.append((model_path, loss, step))
+        except Exception as e:
+            print(f"Warning: Could not read {model_path}: {e}")
+            continue
+
+    if not model_losses:
+        return
+
+    # Sort by loss (lower is better)
+    model_losses.sort(key=lambda x: x[1])
+
+    # Keep top N, delete the rest
+    models_to_keep = model_losses[:n]
+    models_to_delete = model_losses[n:]
+
+    # Delete excess models
+    for model_path, loss, step in models_to_delete:
+        try:
+            os.remove(model_path)
+            print(f"  Removed old best model: {os.path.basename(model_path)} (loss: {loss:.4f})")
+        except Exception as e:
+            print(f"Warning: Could not delete {model_path}: {e}")
+
+    # Create ranked copies for easy identification
+    rank_names = ['best_model.pth', 'second_best_model.pth', 'third_best_model.pth']
+
+    for i, (model_path, loss, step) in enumerate(models_to_keep):
+        if i < len(rank_names):
+            ranked_path = output_dir / rank_names[i]
+            try:
+                import shutil
+                shutil.copy2(model_path, ranked_path)
+            except Exception as e:
+                print(f"Warning: Could not create ranked copy {rank_names[i]}: {e}")
+
+    if models_to_delete:
+        print(f"  Kept {len(models_to_keep)} best models, removed {len(models_to_delete)} older ones")
+
+
+def on_epoch_end_callback(trainer):
+    """Callback to manage best models after each epoch"""
+    output_dir = Path(trainer.output_path)
+    keep_n_best_models(output_dir, KEEP_N_BEST_MODELS)
+
 
 def signal_handler(signum, frame):
     """Handle interrupt signals gracefully"""
@@ -373,7 +453,13 @@ def main():
         # Evaluation
         eval_split_max_size=256,
         eval_split_size=0.01,
-        
+
+        # Checkpoint settings (to save storage - keep only best models)
+        save_step=5000,  # Less frequent regular checkpoints
+        save_n_checkpoints=1,  # Keep only 1 regular checkpoint (for resuming)
+        save_all_best=True,  # Save all best models (managed by callback to keep N best)
+        save_best_after=100,  # Wait 100 steps before saving best models
+
         # Model settings
         use_speaker_embedding=False,
         use_d_vector_file=False,
@@ -466,8 +552,9 @@ def main():
     print(f"  Total: {total_params:,}")
     print(f"  Trainable: {trainable_params:,}")
     
-    # Initialize trainer
+    # Initialize trainer with callback for best model management
     print("\nInitializing trainer...")
+    print(f"  Best model retention: keeping top {KEEP_N_BEST_MODELS} best models")
     global _trainer
     trainer = Trainer(
         TrainerArgs(),
@@ -477,6 +564,9 @@ def main():
         train_samples=train_samples,
         eval_samples=eval_samples,
         parse_command_line_args=False,  # Important: prevent argparse conflicts
+        callbacks={
+            'on_epoch_end': on_epoch_end_callback,  # Manage best models after each epoch
+        },
     )
     _trainer = trainer  # Store reference for signal handling
     

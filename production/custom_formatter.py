@@ -4,43 +4,56 @@ import os
 def sinhala_formatter(root_path, meta_file, **kwargs):
     """
     Formatter for Sinhala dataset with format:
-    audio_filename|sinhala_text|romanized_text
-    
+    audio_filename|sinhala_text|romanized_text (optional)
+
     Uses the native Sinhala text (2nd column) for training
-    to match pretrained model's character set
+    to match pretrained model's character set.
+
+    Supports both 2-column and 3-column formats:
+    - 2 columns: filename|sinhala_text
+    - 3 columns: filename|sinhala_text|romanized_text
     """
     txt_file = os.path.join(root_path, meta_file)
     items = []
-    speaker_name = "oshadi"  # Default speaker name
-    
+
+    # Try to detect speaker from path
+    if "aravinda" in root_path.lower():
+        speaker_name = "aravinda"
+    else:
+        speaker_name = "oshadi"  # Default speaker name
+
     with open(txt_file, "r", encoding="utf-8") as ttf:
         for line in ttf:
             line = line.strip()
             if not line:
                 continue
-                
+
             cols = line.split("|")
-            if len(cols) != 3:
+            if len(cols) < 2:
                 print(f"Warning: Skipping line with {len(cols)} columns: {line}")
                 continue
-            
+
             # Column 0: audio filename (without extension)
             # Column 1: Sinhala text (native script)
-            # Column 2: Romanized text
+            # Column 2: Romanized text (optional, not used)
             wav_file = os.path.join(root_path, "wavs", cols[0] + ".wav")
-            
+
             # Use native Sinhala text (column 1) for training
             text = cols[1].strip()
-            
+
+            if not text:
+                print(f"Warning: Empty text for {cols[0]}, skipping")
+                continue
+
             if os.path.exists(wav_file):
                 items.append({
-                    "text": text, 
-                    "audio_file": wav_file, 
-                    "speaker_name": speaker_name, 
+                    "text": text,
+                    "audio_file": wav_file,
+                    "speaker_name": speaker_name,
                     "root_path": root_path
                 })
             else:
                 print(f"Warning: Audio file not found: {wav_file}")
-    
-    print(f"Loaded {len(items)} samples from {meta_file}")
+
+    print(f"Loaded {len(items)} samples from {meta_file} (speaker: {speaker_name})")
     return items

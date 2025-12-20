@@ -64,7 +64,10 @@ class ConfigMerger:
         'lr_gen': 1e-5,
         'lr_disc': 1e-5,
         'epochs': 500,  # Fewer epochs needed
-        'save_step': 1000,  # More frequent saves
+        'save_step': 5000,  # Less frequent regular checkpoints (to save storage)
+        'save_n_checkpoints': 1,  # Keep only 1 regular checkpoint (for resuming)
+        'save_all_best': True,  # Save all best models (managed by callback to keep N best)
+        'save_best_after': 100,  # Wait 100 steps before saving best models
         'run_eval_steps': 500,
         'test_delay_epochs': 10,
     }
